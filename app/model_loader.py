@@ -5,8 +5,8 @@ import json
 from dataclasses import dataclass
 from pathlib import Path
 
+import keras
 import streamlit as st
-import tensorflow as tf
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -70,9 +70,9 @@ def asset_path(spec: ModelSpec, filename: str) -> Path:
 
 
 @st.cache_resource(show_spinner="Model yükleniyor...")
-def load_model(key: str) -> tf.keras.Model:
+def load_model(key: str) -> keras.Model:
     spec = MODELS[key]
-    return tf.keras.models.load_model(asset_path(spec, spec.weights), compile=False)
+    return keras.models.load_model(asset_path(spec, spec.weights), compile=False)
 
 
 @st.cache_data(show_spinner=False)

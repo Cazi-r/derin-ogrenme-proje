@@ -5,8 +5,8 @@ import re
 
 import numpy as np
 import streamlit as st
-from tensorflow.keras.datasets import imdb
-from tensorflow.keras.preprocessing.sequence import pad_sequences
+from keras.datasets import imdb
+from keras.preprocessing.sequence import pad_sequences
 
 VOCAB_SIZE = 10000
 MAX_LEN = 250
