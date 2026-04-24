@@ -1,87 +1,36 @@
-# Model 3: Bidirectional LSTM (Literatür Mimarisi)
+# Model 3: Bidirectional LSTM
 
-**BIM 430 — Derin Öğrenme Projesi**
+BIM 430 Derin Öğrenme Projesi. IMDB film yorumları üzerinde duygu analizi yapan projenin üçüncü modeli. BiLSTM metni hem ileri hem geri yönde işler, her kelime için geçmiş ve gelecek bağlamı dikkate alır.
 
----
+## Veri Seti
 
-## 📌 Proje Özeti
+Model 1 ve Model 2 ile aynı: Keras IMDB, 22.500 / 2.500 / 25.000 bölünme, VOCAB_SIZE=10.000, MAX_LEN=250, seed=42.
 
-Bu klasör, IMDB film yorumları üzerinde duygu analizi yapan projenin **üçüncü modelini** içerir. Model literatürde yaygın kullanılan **Bidirectional LSTM (BiLSTM)** mimarisidir ve sıfırdan eğitilmiştir.
-
-BiLSTM, metni hem ileri (soldan sağa) hem de geri (sağdan sola) yönlerde işleyerek, her kelime için hem geçmiş hem de gelecek bağlamı dikkate alır.
-
----
-
-## 📊 Veri Seti
-
-Model 1 ve Model 2 ile **birebir aynı** veri seti ve ön işleme kullanılmıştır:
-- Keras IMDB Dataset
-- 22.500 eğitim / 2.500 validation / 25.000 test
-- VOCAB_SIZE = 10.000, MAX_LEN = 250
-- SEED = 42 (deterministik bölünme)
-
----
-
-## 🧠 Model Mimarisi
+## Mimari
 
 ```
-Input (250 token)
-    ↓
-Embedding (10000 → 128 boyut, sıfırdan)
-    ↓
-Bidirectional LSTM (64 birim × 2 yön = 128 boyut)
-    ↓
-Dropout (0.5)
-    ↓
-Dense (32, ReLU)
-    ↓
-Dropout (0.3)
-    ↓
-Dense (1, Sigmoid)
+Input (250)
+  → Embedding (10000 → 128)
+  → Bidirectional LSTM (64 birim × 2 yön = 128)
+  → Dropout(0.5) → Dense(32, ReLU) → Dropout(0.3) → Dense(1, Sigmoid)
 ```
 
-### Literatür Kaynağı
-Schuster, M., & Paliwal, K. K. (1997). Bidirectional recurrent neural networks. *IEEE Transactions on Signal Processing*, 45(11), 2673-2681.
+Referans: Schuster, M., & Paliwal, K. K. (1997). Bidirectional recurrent neural networks. *IEEE Transactions on Signal Processing*, 45(11), 2673–2681.
 
----
+## Eğitim
 
-## ⚙️ Eğitim Yapılandırması
+Model 1 ve Model 2 ile aynı hiperparametreler: Adam (lr=0.001), Binary Crossentropy, batch=64, max 15 epoch, early stopping patience=3, seed=42.
 
-Model 1 ve Model 2 ile birebir aynı hiperparametreler:
-- Optimizer: Adam (lr=0.001)
-- Loss: Binary Crossentropy
-- Batch Size: 64
-- Max Epochs: 15
-- Early Stopping: patience=3
-- Seed: 42
-
----
-
-## 📈 Sonuçlar
+## Sonuçlar (Test Seti)
 
 | Metrik | Değer |
 |--------|-------|
-| **Accuracy** | 0.8484 |
-| **Precision** | 0.8434 |
-| **Recall** | 0.8558 |
-| **F1-Score** | 0.8495 |
+| Accuracy | 0.8484 |
+| Precision | 0.8434 |
+| Recall | 0.8558 |
+| F1-Score | 0.8495 |
 
----
+## Notlar
 
-## 📁 Dosyalar
-
-- `model3_bilstm.ipynb` — Ana notebook
-- `model_3_bilstm.keras` — Eğitilmiş model
-- `results_model_3.json` — Metrikler ve history
-- `model3_training_curves.png` — Loss/Accuracy grafikleri
-- `model3_confusion_matrix.png` — Confusion matrix
-- `model3_architecture.png` — Mimari görseli
-
----
-
-## ⚠️ Önemli
-
-- Transfer learning KULLANILMAMIŞTIR.
-- Fine-tuning YAPILMAMIŞTIR.
-- Embedding dahil tüm ağırlıklar sıfırdan öğrenilmiştir.
-- Model 1, Model 2 ve Model 3 aynı veri kümesi ve aynı hiperparametrelerle eğitilmiştir.
+- Transfer learning ve fine-tuning yoktur; embedding dahil tüm ağırlıklar sıfırdan öğrenildi.
+- Model 1, 2 ve 3 aynı veri bölünmesi ve aynı hiperparametrelerle eğitildi.

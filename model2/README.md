@@ -1,85 +1,36 @@
-# Model 2: LSTM (Literatür Mimarisi)
+# Model 2: LSTM
 
-**BIM 430 — Derin Öğrenme Projesi**
+BIM 430 Derin Öğrenme Projesi. IMDB film yorumları üzerinde duygu analizi yapan projenin ikinci modeli. Literatürde yaygın kullanılan klasik LSTM mimarisi, sıfırdan eğitildi.
 
----
+## Veri Seti
 
-## 📌 Proje Özeti
+Model 1 ile aynı: Keras IMDB, 22.500 / 2.500 / 25.000 bölünme, VOCAB_SIZE=10.000, MAX_LEN=250, seed=42.
 
-Bu klasör, IMDB film yorumları üzerinde duygu analizi yapan projenin **ikinci modelini** içerir. Model literatürde yaygın kullanılan klasik **LSTM** (Long Short-Term Memory) mimarisidir ve sıfırdan eğitilmiştir.
-
----
-
-## 📊 Veri Seti
-
-Model 1 ile **birebir aynı** veri seti ve ön işleme kullanılmıştır:
-- Keras IMDB Dataset
-- 22.500 eğitim / 2.500 validation / 25.000 test
-- VOCAB_SIZE = 10.000, MAX_LEN = 250
-- SEED = 42 (deterministik bölünme)
-
----
-
-## 🧠 Model Mimarisi
+## Mimari
 
 ```
-Input (250 token)
-    ↓
-Embedding (10000 → 128 boyut, sıfırdan)
-    ↓
-LSTM (128 birim, dropout=0.2)
-    ↓
-Dropout (0.5)
-    ↓
-Dense (32, ReLU)
-    ↓
-Dropout (0.3)
-    ↓
-Dense (1, Sigmoid)
+Input (250)
+  → Embedding (10000 → 128)
+  → LSTM (128 birim, dropout=0.2)
+  → Dropout(0.5) → Dense(32, ReLU) → Dropout(0.3) → Dense(1, Sigmoid)
 ```
 
-### Literatür Kaynağı
-Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. *Neural Computation*, 9(8), 1735-1780.
+Referans: Hochreiter, S., & Schmidhuber, J. (1997). Long short-term memory. *Neural Computation*, 9(8), 1735–1780.
 
----
+## Eğitim
 
-## ⚙️ Eğitim Yapılandırması
+Model 1 ile aynı hiperparametreler: Adam (lr=0.001), Binary Crossentropy, batch=64, max 15 epoch, early stopping patience=3, seed=42.
 
-Model 1 ile birebir aynı hiperparametreler:
-- Optimizer: Adam (lr=0.001)
-- Loss: Binary Crossentropy
-- Batch Size: 64
-- Max Epochs: 15
-- Early Stopping: patience=3
-- Seed: 42
-
----
-
-## 📈 Sonuçlar
+## Sonuçlar (Test Seti)
 
 | Metrik | Değer |
 |--------|-------|
-| **Accuracy** | 0.8387 |
-| **Precision** | 0.8186 |
-| **Recall** | 0.8703 |
-| **F1-Score** | 0.8437 |
+| Accuracy | 0.8387 |
+| Precision | 0.8186 |
+| Recall | 0.8703 |
+| F1-Score | 0.8437 |
 
----
+## Notlar
 
-## 📁 Dosyalar
-
-- `model2_lstm.ipynb` — Ana notebook
-- `model_2_lstm.keras` — Eğitilmiş model
-- `results_model_2.json` — Metrikler ve history
-- `model2_training_curves.png` — Loss/Accuracy grafikleri
-- `model2_confusion_matrix.png` — Confusion matrix
-- `model2_architecture.png` — Mimari görseli
-
----
-
-## ⚠️ Önemli
-
-- Transfer learning KULLANILMAMIŞTIR.
-- Fine-tuning YAPILMAMIŞTIR.
-- Embedding dahil tüm ağırlıklar sıfırdan öğrenilmiştir.
-- Model 1, Model 2 ve Model 3 aynı veri kümesi ve aynı hiperparametrelerle eğitilmiştir (adil karşılaştırma).
+- Transfer learning ve fine-tuning yoktur; embedding dahil tüm ağırlıklar sıfırdan öğrenildi.
+- Model 1, 2 ve 3 aynı veri bölünmesi ve aynı hiperparametrelerle eğitildi (adil karşılaştırma).
