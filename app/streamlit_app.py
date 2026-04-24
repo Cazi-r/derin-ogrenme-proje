@@ -177,14 +177,14 @@ with tab_analysis:
     img_cols = st.columns(2)
     with img_cols[0]:
         st.markdown("**Eğitim Eğrileri**")
-        st.image(str(asset_path(spec, spec.training_curve)), use_container_width=True)
+        st.image(str(asset_path(spec, spec.training_curve)), use_column_width=True)
     with img_cols[1]:
         st.markdown("**Confusion Matrix**")
-        st.image(str(asset_path(spec, spec.confusion_matrix)), use_container_width=True)
+        st.image(str(asset_path(spec, spec.confusion_matrix)), use_column_width=True)
 
     if spec.architecture:
         st.markdown("**Model Mimarisi**")
-        st.image(str(asset_path(spec, spec.architecture)), use_container_width=True)
+        st.image(str(asset_path(spec, spec.architecture)), use_column_width=True)
 
     with st.expander("📄 Model README"):
         st.markdown(load_readme(pick))
