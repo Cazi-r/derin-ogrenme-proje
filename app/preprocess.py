@@ -22,6 +22,21 @@ def load_word_index() -> dict[str, int]:
     return {w: i + INDEX_OFFSET for w, i in raw.items()}
 
 
+@st.cache_data(show_spinner=False)
+def load_test_samples() -> list[tuple[str, int]]:
+    """IMDB test setinden decode edilmiş (text, label) listesi döndürür."""
+    (_, _), (x_test, y_test) = imdb.load_data(num_words=VOCAB_SIZE)
+    reverse = {i + INDEX_OFFSET: w for w, i in imdb.get_word_index().items()}
+    skip = {PAD_ID, START_ID, UNK_ID}
+    samples: list[tuple[str, int]] = []
+    for seq, label in zip(x_test, y_test):
+        words = [reverse[i] for i in seq if i not in skip and i in reverse]
+        text = " ".join(words)
+        if 40 <= len(text) <= 1200:
+            samples.append((text, int(label)))
+    return samples
+
+
 _TOKEN_RE = re.compile(r"[a-z0-9']+")
 
 

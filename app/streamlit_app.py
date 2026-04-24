@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from model_loader import MODELS, ModelSpec, asset_path, load_model, load_readme, load_results
-from preprocess import encode
+from preprocess import encode, load_test_samples
 
 st.set_page_config(
     page_title="IMDB Duygu Analizi — 3 Model",
@@ -20,29 +20,14 @@ EXAMPLES = {
     "Negatif örnek": "Worst film ever. Complete waste of time, the plot made no sense and the acting was painfully bad.",
 }
 
-RANDOM_REVIEWS = [
-    "A genuine masterpiece with unforgettable performances and a story that stays with you for days.",
-    "One of the most boring films I have ever seen. I nearly fell asleep halfway through.",
-    "The cinematography was breathtaking and the soundtrack fit every scene perfectly.",
-    "Terrible script, wooden acting, and a plot full of holes. Do yourself a favor and skip it.",
-    "I laughed, I cried, and I was on the edge of my seat. A must-watch for anyone who loves great cinema.",
-    "The pacing was painfully slow and the characters had zero depth. Complete disappointment.",
-    "An incredible performance from the lead actor carries this film from start to finish.",
-    "Cheap production, lazy writing, and jokes that never land. One of the worst I have seen this year.",
-    "A charming and heartfelt story with beautiful visuals. I would happily watch it again.",
-    "Predictable, dull, and way too long. The trailer was honestly better than the whole movie.",
-    "Brilliantly directed and surprisingly emotional. A rare gem that deserves far more attention.",
-    "The special effects looked cheap and the dialogue felt like it was written by a bored intern.",
-    "Smart, funny, and wonderfully acted. Easily one of the best films of the decade.",
-    "A complete waste of a promising cast. The story goes nowhere and the ending is infuriating.",
-    "Wonderful chemistry between the leads and a script full of warmth and wit.",
-    "I wanted to like it, but it was just a forgettable mess of clichés and bad pacing.",
-]
-
-
-def pick_random_review(exclude: str | None = None) -> str:
-    pool = [r for r in RANDOM_REVIEWS if r != exclude] or RANDOM_REVIEWS
-    return random.choice(pool)
+def pick_random_review(exclude: str | None = None) -> tuple[str, int]:
+    """IMDB test setinden rastgele (text, label) döndürür. label: 0=Negatif, 1=Pozitif."""
+    samples = load_test_samples()
+    for _ in range(10):
+        text, label = random.choice(samples)
+        if text != exclude:
+            return text, label
+    return random.choice(samples)
 
 
 def predict(model_key: str, text: str) -> float:
@@ -107,10 +92,16 @@ with tab_single:
         for i, (name, sample) in enumerate(EXAMPLES.items()):
             if ex_cols[i].button(name, key=f"ex_single_{i}"):
                 st.session_state["single_text"] = sample
-        if ex_cols[-1].button("🎲 Rastgele yorum", key="rand_single"):
-            st.session_state["single_text"] = pick_random_review(
+                st.session_state.pop("single_truth", None)
+        if ex_cols[-1].button("🎲 IMDB'den rastgele", key="rand_single"):
+            text_rand, label_rand = pick_random_review(
                 exclude=st.session_state.get("single_text")
             )
+            st.session_state["single_text"] = text_rand
+            st.session_state["single_truth"] = label_rand
+        if "single_truth" in st.session_state:
+            truth_txt = "Pozitif" if st.session_state["single_truth"] == 1 else "Negatif"
+            st.caption(f"📎 Gerçek etiket (IMDB test seti): **{truth_txt}**")
         text = st.text_area(
             "Yorum",
             key="single_text",
@@ -130,6 +121,11 @@ with tab_single:
             label, kind = label_for(prob)
             confidence = prob if prob >= 0.5 else 1 - prob
             color = "#10b981" if kind == "positive" else "#ef4444"
+            truth = st.session_state.get("single_truth")
+            if truth is not None:
+                correct = (truth == 1 and kind == "positive") or (truth == 0 and kind == "negative")
+                badge = "✅ Doğru tahmin" if correct else "❌ Yanlış tahmin"
+                st.markdown(f"**{badge}** — gerçek: {'Pozitif' if truth == 1 else 'Negatif'}")
             st.markdown(
                 f"""
                 <div style="padding:1.25rem;border-radius:12px;border:1px solid {color};background:{color}15;">
@@ -148,10 +144,16 @@ with tab_compare:
     for i, (name, sample) in enumerate(EXAMPLES.items()):
         if ex_cmp_cols[i].button(name, key=f"ex_cmp_{i}"):
             st.session_state["compare_text"] = sample
-    if ex_cmp_cols[-1].button("🎲 Rastgele yorum", key="rand_cmp"):
-        st.session_state["compare_text"] = pick_random_review(
+            st.session_state.pop("compare_truth", None)
+    if ex_cmp_cols[-1].button("🎲 IMDB'den rastgele", key="rand_cmp"):
+        text_rand, label_rand = pick_random_review(
             exclude=st.session_state.get("compare_text")
         )
+        st.session_state["compare_text"] = text_rand
+        st.session_state["compare_truth"] = label_rand
+    if "compare_truth" in st.session_state:
+        truth_txt = "Pozitif" if st.session_state["compare_truth"] == 1 else "Negatif"
+        st.caption(f"📎 Gerçek etiket (IMDB test seti): **{truth_txt}**")
     cmp_text = st.text_area(
         "Yorum",
         key="compare_text",
@@ -188,6 +190,15 @@ with tab_compare:
             else:
                 pos = sum(1 for k in labels if k == "positive")
                 st.warning(f"⚠️ Modeller ayrıştı — {pos} Pozitif, {3 - pos} Negatif")
+
+            truth_cmp = st.session_state.get("compare_truth")
+            if truth_cmp is not None:
+                truth_kind = "positive" if truth_cmp == 1 else "negative"
+                correct_count = sum(1 for lbl in labels if lbl == truth_kind)
+                st.info(
+                    f"🎯 Gerçek etiket: **{'Pozitif' if truth_cmp == 1 else 'Negatif'}** — "
+                    f"{correct_count}/3 model doğru bildi."
+                )
 
 # ---------- Tab 3: Analysis ----------
 with tab_analysis:
